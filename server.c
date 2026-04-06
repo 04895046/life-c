@@ -23,7 +23,7 @@ typedef struct {
 } Move;
 
 /**
- * Function for game progression with customized rules. LLM assisted code.
+ * Determines result of game state with customized rules. LLM assisted code.
  */
 void calculate_generation(GameState *gs) {
     int next[SIZE][SIZE] = {0};
@@ -117,10 +117,12 @@ int main() {
                        fds[active_fds].events = POLLIN;
                        active_fds++;
                    }
-                   if (active_fds == 3) {
-                       printf("Game starting.");
-                   }
                    printf("Player %d connected.\n", active_fds - 1);
+                   if (active_fds == 3) {
+                       printf("Game starting.\n");
+                       process_turn(&gs, fds, moves, num_moves);
+                       last_turn = time(NULL);
+                   }
                } else { // player sending message
                    Move m;
                    int bytes = recv(fds[i].fd, &m, sizeof(Move), 0);
