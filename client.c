@@ -3,6 +3,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <arpa/inet.h>
+#include <poll.h>
 
 #define SIZE 20
 #define PORT 54749
@@ -22,7 +23,7 @@ typedef struct {
 /**
  * Function that draws and colors the game board. LLM assisted code.
  */
-void draw_board(GameState *gs, num_moves) {
+void draw_board(GameState *gs, int num_moves) {
     printf("\033[H\033[JTurn: %d\n", gs->turn);
     for (int i = 0; i < SIZE; i++) {
         for (int j = 0; j < SIZE; j++) {
