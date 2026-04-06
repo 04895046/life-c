@@ -19,6 +19,9 @@ typedef struct {
     int action_type;
 } Move;
 
+/**
+ * Function that draws and colors the game board. LLM assisted code.
+ */
 void draw_board(GameState *gs) {
     printf("\033[H\033[JTurn: %d\n", gs->turn);
     for (int i = 0; i < SIZE; i++) {
@@ -33,13 +36,13 @@ void draw_board(GameState *gs) {
 
 int main(int argc, char *argv[]) {
     int sock;
-    struct sockaddr_in serv_addr = {AF_INET, htons(PORT)};
+    struct sockaddr_in addr = {AF_INET, htons(PORT)};
     GameState gs;
     char *ip = (argc > 1) ? argv[1] : "127.0.0.1";
 
     sock = socket(AF_INET, SOCK_STREAM, 0);
-    inet_pton(AF_INET, ip, &serv_addr.sin_addr);
-    connect(sock, (struct sockaddr*)&serv_addr, sizeof(serv_addr));
+    inet_pton(AF_INET, ip, &addr.sin_addr);
+    connect(sock, (struct sockaddr*)&addr, sizeof(addr));
 
     while (1) {
         recv(sock, &gs, sizeof(GameState), 0);

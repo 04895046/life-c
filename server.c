@@ -19,9 +19,12 @@ typedef struct {
 
 typedef struct {
     int x, y;
-    int action_type; // 1: Place/Convert, 2: Remove Opponent
+    int action_type; // 1: Place, 2: Remove
 } Move;
 
+/**
+ * Function for game progression with customized rules. LLM assisted code.
+ */
 void calculate_generation(GameState *gs) {
     int next[SIZE][SIZE] = {0};
     for (int r = 0; r < SIZE; r++) {
@@ -56,8 +59,6 @@ void process_turn(GameState *gs, struct pollfd *fds, Move moves[3][ACTIONS], int
         }
         num_moves[p] = 0;
     }
-
-
     calculate_generation(gs);
     gs->turn++;
     send(fds[1].fd, gs, sizeof(GameState), 0);
