@@ -4,12 +4,20 @@
 #include <unistd.h>
 #include <arpa/inet.h>
 
-#define SIZE 30
-#define PORT 8080
+#define SIZE 20
+#define PORT 54749
 #define ACTIONS 3
 
-typedef struct { int board[SIZE][SIZE]; int turn; int winner; } GameState;
-typedef struct { int x[ACTIONS], y[ACTIONS]; int action_type[ACTIONS]; } Move;
+typedef struct {
+    int board[SIZE][SIZE];
+    int turn;
+    int winner;
+} GameState;
+
+typedef struct {
+    int x, y;
+    int action_type;
+} Move;
 
 void draw_board(GameState *gs) {
     printf("\033[H\033[JTurn: %d\n", gs->turn);
@@ -42,15 +50,13 @@ int main(int argc, char *argv[]) {
             break;
         }
 
-        Move m;
-        printf("Enter %d moves (type x y): \n", ACTIONS);
         for (int i = 0; i < ACTIONS; i++) {
-            printf("Move %d Action (1:Place/Convert, 2:Remove): ", i+1);
-            scanf("%d %d %d", &m.action_type[i], &m.x[i], &m.y[i]);
-            m.x[i] %= SIZE; m.y[i] %= SIZE; // Bounds check
+            Move m;
+            printf("Move %d/3 - Enter action type (1:Place, 2:Remove), x, y: ", i+1);
+            scanf("%d %d %d", &m.action_type, &m.x, &m.y);
+            send(sock, &m, sizeof(Move), 0);
         }
-        send(sock, &m, sizeof(Move), 0);
-        printf("Waiting for opponent...\n");
+        printf("All moves sent. Waiting for next turn...\n");
     }
     close(sock);
     return 0;
