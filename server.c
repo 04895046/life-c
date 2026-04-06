@@ -47,7 +47,7 @@ void calculate_generation(GameState *gs) {
 memcpy(gs->board, next, sizeof(next));
 }
 
-void process_turn(struct GameState *gs, struct pollfd *fds, Move moves[3][ACTIONS], int *num_moves) {
+void process_turn(GameState *gs, struct pollfd *fds, Move moves[3][ACTIONS], int *num_moves) {
     for (int p = 1; p < 3; ++p) {
         for (int i = 0; i < num_moves[p]; ++i) {
             int x = moves[p][i].x;
@@ -60,8 +60,8 @@ void process_turn(struct GameState *gs, struct pollfd *fds, Move moves[3][ACTION
 
     calculate_generation(gs);
     gs->turn++;
-    send(fds[1].fd, gs, sizeof(struct GameState), 0);
-    send(fds[2].fd, gs, sizeof(struct GameState), 0);
+    send(fds[1].fd, gs, sizeof(GameState), 0);
+    send(fds[2].fd, gs, sizeof(GameState), 0);
 }
 
 int main() {
