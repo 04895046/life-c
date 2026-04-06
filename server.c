@@ -60,6 +60,7 @@ void process_turn(GameState *gs, struct pollfd *fds, Move moves[3][ACTIONS], int
         num_moves[p] = 0;
     }
     calculate_generation(gs);
+    printf("Next state processed. Forwarding to clients.\n");
     gs->turn++;
     send(fds[1].fd, gs, sizeof(GameState), 0);
     send(fds[2].fd, gs, sizeof(GameState), 0);
@@ -115,6 +116,13 @@ int main() {
                        }
                        fds[active_fds].fd = new_sock;
                        fds[active_fds].events = POLLIN;
+                       char notif[50];
+                       if (active_fds == 1) {
+                           sprintf(notif, "Ready player \033[1;31m1\033[0m\n");
+                       } else {
+                           sprintf(notif, "Ready player \033[1;34m2\033[0m\n");
+                       }
+                       send(new_sock, notif, strlen(notif), 0);
                        active_fds++;
                    }
                    printf("Player %d connected.\n", active_fds - 1);
