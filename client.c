@@ -22,7 +22,7 @@ typedef struct {
 /**
  * Function that draws and colors the game board. LLM assisted code.
  */
-void draw_board(GameState *gs) {
+void draw_board(GameState *gs, num_moves) {
     printf("\033[H\033[JTurn: %d\n", gs->turn);
     for (int i = 0; i < SIZE; i++) {
         for (int j = 0; j < SIZE; j++) {
@@ -33,9 +33,9 @@ void draw_board(GameState *gs) {
         printf("\n");
     }
     if (num_moves >= ACTIONS) {
-        printf("\n\033[1;32m[STATUS] All moves sent. Waiting for server tick...\033[0m\n");
+        printf("\n\033[1;32mAll moves sent. Waiting for next state.\033[0m\n");
     } else {
-        printf("\n[STATUS] Waiting for your input (%d moves left)\n", ACTIONS - num_moves);
+        printf("\n\033[1;32mEnter up to 3 moves - action type (1:Place, 2:Remove), x, y:\033[0m\n");
     }
 }
 
@@ -69,13 +69,13 @@ int main(int argc, char *argv[]) {
 
         if (client_fds[1].revents & POLLIN) { // new state incoming
             if (recv(sock, &gs, sizeof(GameState), 0) <= 0) {
-                printf("Server disconnected. Exiting.");
+                printf("\n\033[1;32mServer disconnected. Exiting.\033[0m\n");
                 close(sock);
                 exit(1);
             }
-            draw_board(&gs);
+            draw_board(&gs, num_moves);
             num_moves = 0;
-            printf("Enter up to 3 moves - action type (1:Place, 2:Remove), x, y: ");
+
         }
 
         if (client_fds[0].revents & POLLIN) {
@@ -86,20 +86,19 @@ int main(int argc, char *argv[]) {
                     if (sscanf(buf, "%d %d %d", &m.action_type, &m.x, &m.y) == 3) {
                         send(sock, &m, sizeof(Move), 0);
                         num_moves++;
-                        printf("Move %d/%d sent.\n", num_moves, ACTIONS);
                         if (num_moves == ACTIONS) {
-                            printf("All moves sent. Waiting for next state.\n");
+                            printf("\033[1;32mAll moves sent. Waiting for next state.\033[0m\n");
                         }
                     } else {
-                        printf("Invalid format. Expected: action x y\n");
+                        printf("\033[1;32mInvalid format. Expected: action x y\033[0m\n");
                     }
                 } else {
-                    printf("Move limit for this turn exceeded.\n");
+                    printf("\033[1;32mMove limit for this turn exceeded.\033[0m\n");
                 }
             }
         }
         if (gs.winner != 0) {
-            printf("Game Over! Player %d Wins!\n", gs.winner);
+            printf("\033[1;32mGame Over! Player %d Wins!\n", gs.winner);
             break;
         }
     }
