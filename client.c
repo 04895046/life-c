@@ -86,7 +86,7 @@ int main(int argc, char *argv[]) {
             }
         }
         if (gs.winner != 0) {
-            printf("\033[1;32mGame Over! Player %d Wins!\n", gs.winner);
+            printf("\033[1;32mGame Over! Player %d Wins!\033[0m\n", gs.winner);
             break;
         }
     }

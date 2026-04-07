@@ -102,7 +102,7 @@ void process_turn(GameState *gs, struct pollfd *fds, Move moves[3][ACTIONS], int
 }
 
 void remove_player(struct pollfd *fds, int index, int *num_moves) {
-    printf("Player %d disconnected. Cleaning up resources.\n", index);
+    printf("Player %d disconnected.\n", index);
     close(fds[index].fd);
     fds[index].fd = -1;
     num_moves[index] = 0;
@@ -112,7 +112,7 @@ int server_sock;
 
 void handle_sigint(int sig) {
     (void) sig;
-    printf("Shutting down gracefully.\n");
+    printf("\nShutting down gracefully.\n");
     close(server_sock);
     exit(0);
 }
