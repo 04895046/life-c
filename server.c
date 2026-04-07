@@ -60,7 +60,7 @@ void check_winner(GameState *gs) {
         else if (p2_count > 0 && p1_count == 0) {
             gs->winner = 2;
         } else {
-            continue;
+
         }
     }
 
