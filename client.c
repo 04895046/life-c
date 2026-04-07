@@ -26,7 +26,10 @@ void draw_board(GameState *gs) {
 
 int main(int argc, char *argv[]) {
     int sock;
-    struct sockaddr_in addr = {AF_INET, htons(PORT)};
+    struct sockaddr_in addr;
+    memset(&addr, 0, sizeof(addr));
+    addr.sin_family = AF_INET;
+    addr.sin_port = htons(PORT);
     GameState gs;
     char *ip = (argc > 1) ? argv[1] : "127.0.0.1";
 

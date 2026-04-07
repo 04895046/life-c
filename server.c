@@ -3,7 +3,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <arpa/inet.h>
-#include <sys/time.h>
+#include <time.h>
 #include <poll.h>
 #include <netinet/in.h>
 #include <signal.h>
@@ -111,16 +111,25 @@ void remove_player(struct pollfd *fds, int index, int *num_moves) {
 int server_sock;
 
 void handle_sigint(int sig) {
+    (void) sig;
     printf("Shutting down gracefully.\n");
     close(server_sock);
     exit(0);
 }
 
 int main() {
-    struct sockaddr_in addr = {AF_INET, htons(PORT), INADDR_ANY};
-    memset(&(addr.sin_zero),0 ,8);
+    // game data initialization
     GameState gs = {0};
-    struct pollfd fds[3];
+    Move moves[3][ACTIONS];
+    int num_moves[3] = {0};
+
+    // socket initialization
+    struct sockaddr_in addr;
+    memset(&addr, 0, sizeof(addr));
+    addr.sin_family = AF_INET;
+    addr.sin_port = htons(PORT);
+    addr.sin_addr.s_addr = INADDR_ANY;
+    memset(&(addr.sin_zero),0 ,8);
     int listener = socket(AF_INET, SOCK_STREAM, 0);
     if (bind(listener, (struct sockaddr *) &addr, sizeof(struct sockaddr_in)) == -1) {
         perror("bind");
@@ -132,19 +141,23 @@ int main() {
         exit(1);
     }
     server_sock = listener;
+
+    // poll initialization
+    struct pollfd fds[3];
     fds[0].fd = listener;
     fds[0].events = POLLIN;
     int active_fds = 1;
 
-    Move moves[3][ACTIONS];
-    int num_moves[3] = {0};
+    // timer
     time_t last_turn = time(NULL);
 
     printf("Waiting for players on port %d... \n", PORT);
 
+    // main game loop
     while (1) {
         signal(SIGINT, handle_sigint);
 
+        // timer check
         time_t now = time(NULL);
         int time_passed = (int)(now - last_turn);
         int time_rem = (30 - time_passed) * 1000;
@@ -152,6 +165,7 @@ int main() {
             time_rem = 0;
         }
 
+        // poll loop
         int status = poll(fds, active_fds, time_rem);
         if (status < 0) {
             perror("poll");

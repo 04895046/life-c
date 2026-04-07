@@ -6,7 +6,6 @@
 #define COMMON_H
 
 #define SIZE 20
-#define PORT 54749
 #define ACTIONS 3
 
 typedef struct {
@@ -20,4 +19,4 @@ typedef struct {
     int action_type;
 } Move;
 
-#endif //LIFE_C_COMMON_H
+#endif //COMMON_H
