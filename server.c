@@ -50,20 +50,67 @@ void calculate_generation(GameState *gs) {
 memcpy(gs->board, next, sizeof(next));
 }
 
+void check_winner(GameState *gs) {
+    int p1_count = 0;
+    int p2_count = 0;
+
+    for (int i = 0; i < SIZE; i++) {
+        for (int j = 0; j < SIZE; j++) {
+            if (gs->board[i][j] == 1) {
+                p1_count++;
+            }
+            else if (gs->board[i][j] == 2) {
+                p2_count++;
+            }
+        }
+    }
+
+    if (gs->turn > 1) { // extinction
+        if (p1_count > 0 && p2_count == 0) {
+            gs->winner = 1;
+        }
+        else if (p2_count > 0 && p1_count == 0) {
+            gs->winner = 2;
+        }
+        else if (p1_count == 0 && p2_count == 0) {
+            gs->winner = 3;
+        }
+    }
+
+    if (gs->turn >= 100 && gs->winner == 0) { // turn limit
+        if (p1_count > p2_count) {
+            gs->winner = 1;
+        }
+        else if (p2_count > p1_count) {
+            gs->winner = 2;
+        }
+        else {
+            gs->winner = 3;
+        }
+    }
+}
+
 void process_turn(GameState *gs, struct pollfd *fds, Move moves[3][ACTIONS], int *num_moves) {
     for (int p = 1; p < 3; ++p) {
         for (int i = 0; i < num_moves[p]; ++i) {
             int x = moves[p][i].x;
             int y = moves[p][i].y;
+            if (x < 0 || x >= SIZE || y < 0 || y >= SIZE) {
+                continue;
+            }
             gs->board[y][x] = (moves[p][i].action_type == 1) ? p : 0; // possible oob for aray
         }
         num_moves[p] = 0;
     }
     calculate_generation(gs);
+    check_winner(gs);
     printf("Next state processed. Forwarding to clients.\n");
     gs->turn++;
-    send(fds[1].fd, gs, sizeof(GameState), 0);
-    send(fds[2].fd, gs, sizeof(GameState), 0);
+    for (int i = 1; i < 3; i++) {
+        if (fds[i].fd != -1) {
+            send(fds[i].fd, gs, sizeof(GameState), 0);
+        }
+    }
 }
 
 int main() {
@@ -137,9 +184,12 @@ int main() {
                    if (bytes < 0) {
                        perror("recv");
                        exit(1);
-                   } else if (bytes == 0) {
+                   }
+                   if (bytes == 0) {
                        printf("Player %d disconnected.\n", i);
                        close(fds[i].fd);
+                       fds[i].fd = -1;
+                       num_moves[i] = 0;
                    } else {
                        printf("Received move from player %d.\n", i);
                        if (num_moves[i] < ACTIONS) {

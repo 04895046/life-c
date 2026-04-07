@@ -23,7 +23,7 @@ typedef struct {
 /**
  * Function that draws and colors the game board. LLM assisted code.
  */
-void draw_board(GameState *gs, int num_moves) {
+void draw_board(GameState *gs) {
     printf("\033[H\033[JTurn: %d\n", gs->turn);
     for (int i = 0; i < SIZE; i++) {
         for (int j = 0; j < SIZE; j++) {
@@ -33,11 +33,7 @@ void draw_board(GameState *gs, int num_moves) {
         }
         printf("\n");
     }
-    if (num_moves >= ACTIONS) {
-        printf("\n\033[1;32mAll moves sent. Waiting for next state.\033[0m\n");
-    } else {
-        printf("\n\033[1;32mEnter up to 3 moves - action type (1:Place, 2:Remove), x, y:\033[0m\n");
-    }
+    printf("\n\033[1;32mEnter up to 3 moves - action type (1: Place, 2: Remove), x, y:\033[0m\n");
 }
 
 int main(int argc, char *argv[]) {
@@ -74,7 +70,7 @@ int main(int argc, char *argv[]) {
                 close(sock);
                 exit(1);
             }
-            draw_board(&gs, num_moves);
+            draw_board(&gs);
             num_moves = 0;
 
         }
