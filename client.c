@@ -4,21 +4,9 @@
 #include <unistd.h>
 #include <arpa/inet.h>
 #include <poll.h>
+#include <signal.h>
 
-#define SIZE 20
-#define PORT 54749
-#define ACTIONS 3
-
-typedef struct {
-    int board[SIZE][SIZE];
-    int turn;
-    int winner;
-} GameState;
-
-typedef struct {
-    int x, y;
-    int action_type;
-} Move;
+#include "common.h"
 
 /**
  * Function that draws and colors the game board. LLM assisted code.

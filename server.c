@@ -6,21 +6,9 @@
 #include <sys/time.h>
 #include <poll.h>
 #include <netinet/in.h>
+#include <signal.h>
 
-#define SIZE 20
-#define PORT 54749
-#define ACTIONS 3
-
-typedef struct {
-    int board[SIZE][SIZE];
-    int turn;
-    int winner; // 0: ongoing, 1: P1, 2: P2, 3: Draw
-} GameState;
-
-typedef struct {
-    int x, y;
-    int action_type; // 1: Place, 2: Remove
-} Move;
+#include "common.h"
 
 /**
  * Determines result of game state with customized rules. LLM assisted code.
@@ -113,6 +101,21 @@ void process_turn(GameState *gs, struct pollfd *fds, Move moves[3][ACTIONS], int
     }
 }
 
+void remove_player(struct pollfd *fds, int index, int *num_moves) {
+    printf("Player %d disconnected. Cleaning up resources.\n", index);
+    close(fds[index].fd);
+    fds[index].fd = -1;
+    num_moves[index] = 0;
+}
+
+int server_sock;
+
+void handle_sigint(int sig) {
+    printf("Shutting down gracefully.\n");
+    close(server_sock);
+    exit(0);
+}
+
 int main() {
     struct sockaddr_in addr = {AF_INET, htons(PORT), INADDR_ANY};
     memset(&(addr.sin_zero),0 ,8);
@@ -128,14 +131,20 @@ int main() {
         perror("listen");
         exit(1);
     }
+    server_sock = listener;
     fds[0].fd = listener;
     fds[0].events = POLLIN;
     int active_fds = 1;
-    printf("Waiting for players on port %d... \n", PORT);
+
     Move moves[3][ACTIONS];
     int num_moves[3] = {0};
     time_t last_turn = time(NULL);
+
+    printf("Waiting for players on port %d... \n", PORT);
+
     while (1) {
+        signal(SIGINT, handle_sigint);
+
         time_t now = time(NULL);
         int time_passed = (int)(now - last_turn);
         int time_rem = (30 - time_passed) * 1000;
@@ -187,21 +196,20 @@ int main() {
                    }
                    if (bytes == 0) {
                        printf("Player %d disconnected.\n", i);
-                       close(fds[i].fd);
-                       fds[i].fd = -1;
-                       num_moves[i] = 0;
+                       remove_player(fds, i, num_moves);
                    } else {
                        printf("Received move from player %d.\n", i);
                        if (num_moves[i] < ACTIONS) {
                            moves[i][num_moves[i]] = m;
                            num_moves[i]++;
                        } else {
-                           printf("Rejected excess move from player %d.\n", i);
+                           printf("Rejected additional move from player %d.\n", i);
                        }
                    }
                }
             }
         }
     }
+    close(listener);
     return 0;
 }
