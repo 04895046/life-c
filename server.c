@@ -100,10 +100,10 @@ void process_turn(GameState *gs, struct pollfd *fds, Move moves[3][ACTIONS], int
         num_moves[p] = 0;
     }
     calculate_generation(gs);
+    printf("Next state processed. Forwarding to clients.\n");
     if (check_winner(gs)) {
         handle_sigint(0);
     }
-    printf("Next state processed. Forwarding to clients.\n");
     gs->turn++;
     for (int i = 1; i < 3; i++) {
         if (fds[i].fd != -1) {
