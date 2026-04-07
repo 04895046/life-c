@@ -38,7 +38,16 @@ void calculate_generation(GameState *gs) {
 memcpy(gs->board, next, sizeof(next));
 }
 
-void check_winner(GameState *gs) {
+int server_sock;
+
+void handle_sigint(int sig) {
+    (void) sig;
+    printf("\nShutting down gracefully.\n");
+    close(server_sock);
+    exit(0);
+}
+
+bool check_winner(GameState *gs) {
     int p1_count = 0;
     int p2_count = 0;
 
@@ -75,6 +84,7 @@ void check_winner(GameState *gs) {
             gs->winner = 3;
         }
     }
+    return (gs->winner != 0);
 }
 
 void process_turn(GameState *gs, struct pollfd *fds, Move moves[3][ACTIONS], int *num_moves) {
@@ -90,7 +100,9 @@ void process_turn(GameState *gs, struct pollfd *fds, Move moves[3][ACTIONS], int
         num_moves[p] = 0;
     }
     calculate_generation(gs);
-    check_winner(gs);
+    if (check_winner(gs)) {
+        handle_sigint(NULL);
+    }
     printf("Next state processed. Forwarding to clients.\n");
     gs->turn++;
     for (int i = 1; i < 3; i++) {
@@ -105,15 +117,6 @@ void remove_player(struct pollfd *fds, int index, int *num_moves) {
     close(fds[index].fd);
     fds[index].fd = -1;
     num_moves[index] = 0;
-}
-
-int server_sock;
-
-void handle_sigint(int sig) {
-    (void) sig;
-    printf("\nShutting down gracefully.\n");
-    close(server_sock);
-    exit(0);
 }
 
 int main() {
