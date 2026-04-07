@@ -47,7 +47,7 @@ void handle_sigint(int sig) {
     exit(0);
 }
 
-bool check_winner(GameState *gs) {
+int check_winner(GameState *gs) {
     int p1_count = 0;
     int p2_count = 0;
 
@@ -84,7 +84,7 @@ bool check_winner(GameState *gs) {
             gs->winner = 3;
         }
     }
-    return (gs->winner != 0);
+    return gs->winner;
 }
 
 void process_turn(GameState *gs, struct pollfd *fds, Move moves[3][ACTIONS], int *num_moves) {
@@ -101,7 +101,7 @@ void process_turn(GameState *gs, struct pollfd *fds, Move moves[3][ACTIONS], int
     }
     calculate_generation(gs);
     if (check_winner(gs)) {
-        handle_sigint(NULL);
+        handle_sigint(0);
     }
     printf("Next state processed. Forwarding to clients.\n");
     gs->turn++;
