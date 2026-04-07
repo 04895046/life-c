@@ -59,9 +59,8 @@ void check_winner(GameState *gs) {
         }
         else if (p2_count > 0 && p1_count == 0) {
             gs->winner = 2;
-        }
-        else if (p1_count == 0 && p2_count == 0) {
-            gs->winner = 3;
+        } else {
+            continue;
         }
     }
 
