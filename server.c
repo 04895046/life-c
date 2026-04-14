@@ -11,7 +11,7 @@
 #include "common.h"
 
 /**
- * Determines result of game state with customized rules. LLM assisted code.
+ * Determines result of game state with customized rules.
  */
 void calculate_generation(GameState *gs) {
     int next[SIZE][SIZE] = {0};
