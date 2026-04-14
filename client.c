@@ -9,7 +9,7 @@
 #include "common.h"
 
 /**
- * Function that draws and colors the game board. LLM assisted code.
+ * Function that draws and colors the game board.
  */
 void draw_board(GameState *gs) {
     printf("\033[H\033[JTurn: %d\n", gs->turn);
